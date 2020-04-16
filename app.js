@@ -10,23 +10,21 @@ app.use(express.urlencoded({ extended: false }));
 
 
 let userlist = JSON.parse(fs.readFileSync('./userlist.json'))
-let userdata = userlist
+let userlistdata = userlist
 io.on('connection', (socket) => {
     console.log('connecting');
     console.log(userlist)
 
+    socket.on('check', (data) => {
+        io.emit('check', userlistdata)
+    })
+
 
     socket.on('user-join', (data) => {
-        let user = userlist.find(el => el.name == data.username)
-        if (!user) {
-            userdata.push(data)
-            console.log(data.username);
-            fs.writeFileSync('userlist.json', JSON.stringify(userdata, null, 2))
-            io.emit('user-join', userlist)
-        } else {
-            console.log("User already exist");
-            socket.emit("user-list", false);
-        }
+        let userdata = userlist
+        userdata.push(data)
+        fs.writeFileSync('userlist.json', JSON.stringify(userdata, null, 2))
+        io.emit('user-join', userdata)
     })
   
     socket.on('correct', (result) => {
@@ -39,13 +37,31 @@ io.on('connection', (socket) => {
             newuserdata.push(newdata)
         })
         fs.writeFileSync('userlist.json', JSON.stringify(newuserdata, null, 2))
-        io.emit('correct', newuserdata)
+        io.emit('user-join', newuserdata)
         console.log(`${result.username} has answered.`);
     })
 
-    socket.on("disconnect", () => {
-        console.log('a user disconnected');
-    });
+
+    socket.on('exit', (playername) => {
+        console.log('data :' + playername);
+        let newuserdata = []
+        let data = userlist
+        data.forEach(el => {
+            if (el.username !== playername) {
+                let newdata = {
+                    username: el.username,
+                    score: el.score
+                }
+                if (data.length > 1) {
+                    newuserdata.push(newdata)
+                }
+            }
+        })
+        console.log(newuserdata)
+        fs.writeFileSync('userlist.json', JSON.stringify(newuserdata, null, 2))
+        io.emit('user-join', newuserdata)
+    })
+
 });
 
 http.listen(3000, () => {
