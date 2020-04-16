@@ -3,6 +3,8 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const cors = require("cors");
+const fs = require("fs");
+let words = JSON.parse(fs.readFileSync("./words.json"));
 
 app.use(cors());
 app.use(express.json());
@@ -27,7 +29,7 @@ io.on('connection', (socket) => {
       console.log(userlist)
       console.log('new user connected');   
       socket.emit("user-list", true);     
-      io.emit('user-join', userlist)
+      io.emit('user-join', userlist);
     }
     else
     {
@@ -36,6 +38,11 @@ io.on('connection', (socket) => {
     }
   })
 
+  socket.on('get-word', () => {
+    let index = Math.floor(Math.random() * words.length);
+    io.emit("get-word", words[index]);
+    words.splice(index, 1);
+  })
 });
 
 http.listen(3000, () => {
