@@ -8,6 +8,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended : false}));
 
+
+let userlist = []
 io.on('connection', (socket) => {
   console.log('a user connected');
 
@@ -15,10 +17,13 @@ io.on('connection', (socket) => {
   {
     console.log('a user disconnected');
   });
-  socket.on("user-connect", () =>
-  {
+
+  socket.on('user-join', (data) => {
+    userlist.push(data)
     console.log('new user connected');
+    io.emit('user-join', userlist)
   })
+
 });
 
 http.listen(3000, () => {
