@@ -10,16 +10,22 @@ app.use(express.urlencoded({ extended: false }));
 
 
 let userlist = JSON.parse(fs.readFileSync('./userlist.json'))
+let userdata = userlist
 io.on('connection', (socket) => {
     console.log('connecting');
     console.log(userlist)
-    socket.on('user-join', (data) => {
-        let userdata = userlist
-        userdata.push(data)
-        fs.writeFileSync('userlist.json', JSON.stringify(userdata, null, 2))
-        io.emit('user-join', userdata)
-        console.log(`${data.username} has joined`);
 
+    socket.on('user-join', (data) => {
+        let user = userlist.find(el => el.name == data.username)
+        if (!user) {
+            userdata.push(data)
+            console.log(data.username);
+            fs.writeFileSync('userlist.json', JSON.stringify(userdata, null, 2))
+            io.emit('user-join', userlist)
+        } else {
+            console.log("User already exist");
+            socket.emit("user-list", false);
+        }
     })
 
     socket.on('correct', (result) => {
