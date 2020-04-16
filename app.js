@@ -15,6 +15,7 @@ io.on('connection', (socket) => {
     console.log('connecting');
     console.log(userlist)
 
+
     socket.on('user-join', (data) => {
         let user = userlist.find(el => el.name == data.username)
         if (!user) {
@@ -27,7 +28,7 @@ io.on('connection', (socket) => {
             socket.emit("user-list", false);
         }
     })
-
+  
     socket.on('correct', (result) => {
         let newuserdata = []
         result.forEach(el => {
