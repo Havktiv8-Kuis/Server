@@ -19,13 +19,14 @@ io.on('connection', (socket) => {
         io.emit('check', userlistdata)
     })
 
+
     socket.on('user-join', (data) => {
         let userdata = userlist
         userdata.push(data)
         fs.writeFileSync('userlist.json', JSON.stringify(userdata, null, 2))
         io.emit('user-join', userdata)
     })
-
+  
     socket.on('correct', (result) => {
         let newuserdata = []
         result.forEach(el => {
