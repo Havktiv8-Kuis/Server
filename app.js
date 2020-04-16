@@ -12,6 +12,7 @@ app.use(express.urlencoded({extended : false}));
 let userlist = []
 io.on('connection', (socket) => {
   console.log('a user connected');
+  socket.emit("user-list", userlist);
 
   socket.on("disconnect", () =>
   {
@@ -19,9 +20,20 @@ io.on('connection', (socket) => {
   });
 
   socket.on('user-join', (data) => {
-    userlist.push(data)
-    console.log('new user connected');
-    io.emit('user-join', userlist)
+    let user = userlist.find(el => el.name == data.name)
+    if(!user)
+    {
+      userlist.push(data)
+      console.log(userlist)
+      console.log('new user connected');   
+      socket.emit("user-list", true);     
+      io.emit('user-join', userlist)
+    }
+    else
+    {
+      console.log("User already exist");
+      socket.emit("user-list", false);
+    }
   })
 
 });
