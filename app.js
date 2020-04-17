@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: false }));
 let userlist = JSON.parse(fs.readFileSync('./userlist.json'))
 let question = JSON.parse(fs.readFileSync('./question.json'))
 
-let questiondata = question
+let questiondata = question.slice(0);
 let userlistdata = userlist
 
 io.on('connection', (socket) => {
@@ -105,6 +105,10 @@ io.on('connection', (socket) => {
         questiondata.splice(index, 1);
     })
 
+    socket.on('winner', (name) =>
+    {
+        io.emit('winner', name);
+    })
 //   socket.on('get-word', () => {
 //     let index = Math.floor(Math.random() * words.length);
 //     io.emit("get-word", words[index]);
