@@ -10,7 +10,11 @@ app.use(express.urlencoded({ extended: false }));
 
 
 let userlist = JSON.parse(fs.readFileSync('./userlist.json'))
+let question = JSON.parse(fs.readFileSync('./question.json'))
+
+let questiondata = question
 let userlistdata = userlist
+
 io.on('connection', (socket) => {
     console.log('connecting');
     console.log(userlist)
@@ -21,9 +25,16 @@ io.on('connection', (socket) => {
 
     socket.on('user-join', (data) => {
         let userdata = userlist
-        userdata.push(data)
-        fs.writeFileSync('userlist.json', JSON.stringify(userdata, null, 2))
-        io.emit('user-join', userdata)
+        let user = userdata.find(el => el.username == data.username)
+        if (!user) {
+            userdata.push(data)
+            fs.writeFileSync('userlist.json', JSON.stringify(userdata, null, 2))
+            socket.emit("user-list", true);
+            io.emit('user-join', userdata)
+        } else {
+            console.log("User already exist");
+            socket.emit("user-list", false);
+        }
     })
 
     socket.on('correct', (result) => {
@@ -59,6 +70,11 @@ io.on('connection', (socket) => {
         console.log(newuserdata)
         fs.writeFileSync('userlist.json', JSON.stringify(newuserdata, null, 2))
         io.emit('user-join', newuserdata)
+    })
+
+    socket.on('get-word', () => {
+        let index = Math.floor(Math.random() * questiondata.length)
+        io.emit("get-word", questiondata[index])
     })
 
 });
